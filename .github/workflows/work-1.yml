@@ -34,15 +34,17 @@ jobs:
     name: 도커 이미지 빌드와 푸시
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
-    steps: # private.html 생성
+    steps: 
       - uses: actions/checkout@v6
+      
+      # 👇 이 부분을 수정했습니다: 폴더를 강제 생성(mkdir -p)하고 echo 문법으로 변경
       - name: src/private.html 생성
         env:
           PRIVATE_HTML: ${{ secrets.PRIVATE_HTML }}
         run: |
-          cat <<EOF > src/private.html
-          $PRIVATE_HTML
-          EOF
+          mkdir -p src
+          echo "$PRIVATE_HTML" > src/private.html
+          
       - name: Docker Buildx 설치
         uses: docker/setup-buildx-action@v3
       - name: 레지스트리 로그인
@@ -64,6 +66,5 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/p-14830-1:${{ needs.makeTagAndRelease.outputs.tag_name }}
             ghcr.io/${{ env.OWNER_LC }}/p-14830-1:latest
-          # 💡 팁: GitHub Actions 전용 캐시를 사용하여 빌드 속도를 비약적으로 높입니다.
           cache-from: type=gha
           cache-to: type=gha,mode=max
